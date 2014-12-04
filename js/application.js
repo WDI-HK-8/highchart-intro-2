@@ -1,10 +1,13 @@
 $(document).ready(function(){
 
   // data is an array
+  var doneCities = 0;
+  var numCities = 2;
   var dataHK = [];
   var dataNYC = [];
   var urlHK = 'http://api.openweathermap.org/data/2.5/history/city?q=HongKong&type=hour';
-  var urlNYC = 'http://api.openweathermap.org/data/2.5/history/city?q=nyc&type=hour';
+  // var urlNYC = 'http://api.openweathermap.org/data/2.5/history/city?q=nyc&type=hour';
+  var urlNYC = 'http://asdf';
 
   function getTemp(data, url){
     $.ajax({
@@ -29,7 +32,11 @@ $(document).ready(function(){
         // print out data
         console.log(data);
 
-        initializeHighChart(); 
+        doneCities++;
+
+        if (doneCities == numCities){
+          initializeHighChart(); 
+        }
       },
       error: function(){
         alert("cannot connect");
