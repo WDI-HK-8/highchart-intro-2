@@ -1,2 +1,4 @@
-intro-highchart
+Introduction to HighChart
 ===============
+
+In-class Exercise
