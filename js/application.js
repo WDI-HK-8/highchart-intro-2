@@ -1,55 +1,49 @@
 $(document).ready(function(){
 
-  // data is an array
-  var doneCities = 0;
-  var numCities = 2;
-  var dataHK = [];
-  var dataNYC = [];
-  var urlHK = 'http://api.openweathermap.org/data/2.5/history/city?q=HongKong&type=hour';
-  // var urlNYC = 'http://api.openweathermap.org/data/2.5/history/city?q=nyc&type=hour';
-  var urlNYC = 'http://asdf';
+  var HighCharts = function(cities){
+    this.cities = cities;
+    this.allData = [];
+  };
 
-  function getTemp(data, url){
+  HighCharts.prototype.graphAllCities = function(){
+    var city;
+
+    for (var i = 0; i < this.cities.length; i++) {
+      city = this.cities[i];
+      this.graphOneCity(city.url, city.name);
+    };
+
+  };
+
+  HighCharts.prototype.graphOneCity = function(url, name){
+
+    var callbackFunction = function(response){
+      var listItem;
+      var data = []
+
+      for (var i = 0; i < response.list.length; i++){
+        listItem = response.list[i];
+        data.push({ x: listItem.dt * 1000, y: listItem.main.temp});
+      }
+
+      this.allData.push({ name: name, data: data })
+
+      this.graphChart();
+    };
+
     $.ajax({
+      context: this,
       type: 'GET',
       url: url,
-      dataType: 'JSON',
-      success: function(response){
-        // this is how I can get 1 temperature
-        // console.log(response.list[0].main.temp);
-
-        // this is how I loop it to get all temperatures
-        $(response.list).each(function(){
-          // collect each data point 
-          var dataPoint = {};
-          dataPoint.y = this.main.temp;
-          dataPoint.x = this.dt * 1000;
-
-          // add each data point to the data array
-          data.push(dataPoint);
-        })
-
-        // print out data
-        console.log(data);
-
-        doneCities++;
-
-        if (doneCities == numCities){
-          initializeHighChart(); 
-        }
-      },
+      success: callbackFunction,
       error: function(){
         alert("cannot connect");
       }
     });
   }
 
-  getTemp(dataHK, urlHK);
-  getTemp(dataNYC, urlNYC);
-
-  function initializeHighChart(){
+  HighCharts.prototype.graphChart = function(){
     $('#chart').highcharts({
-      // key: value
       title: {
         text: 'Historical Temperatures'
       },
@@ -60,20 +54,20 @@ $(document).ready(function(){
         // Configuration of xAxis
         type: 'datetime',
         dateTimeLabelFormats: {
-            millisecond: '%H:%M:%S.%L',
-            second: '%H:%M:%S',
-            minute: '%H:%M',
-            hour: '%H:%M',
-            day: '%e. %b',
-            week: '%e. %b',
-            month: '%b \'%y',
-            year: '%Y'
+          millisecond: '%H:%M:%S.%L',
+          second: '%H:%M:%S',
+          minute: '%H:%M',
+          hour: '%H:%M',
+          day: '%e. %b',
+          week: '%e. %b',
+          month: '%b \'%y',
+          year: '%Y'
         }
       },
       yAxis: {
         // Configuration of yAxis
         min: 250,
-        max: 300,
+        max: 350,
         title: {
             text: 'Temperature (°K)'
         }
@@ -85,17 +79,22 @@ $(document).ready(function(){
         verticalAlign: 'middle',
         borderWidth: 0
       },
-      series: [{
-        // Data points
-        name: 'Hong Kong',
-        data: dataHK
-      },
-      {
-        // Data points
-        name: 'NYC',
-        data: dataNYC
-      }]
+      series: this.allData
     });
   }
 
+  var chart = new HighCharts([
+    {
+      name: 'Boston',
+      url: 'http://api.openweathermap.org/data/2.5/history/city?q=boston&type=day'
+    },{
+      name: 'NYC',
+      url: 'http://api.openweathermap.org/data/2.5/history/city?q=nyc&type=day'
+    },{
+      name: 'Hong Kong',
+      url: 'http://api.openweathermap.org/data/2.5/history/city?q=hongkong&type=day'
+    }
+  ]);
+
+  chart.graphAllCities();
 });
